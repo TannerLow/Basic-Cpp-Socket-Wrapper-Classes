@@ -82,8 +82,7 @@ bool ClientSocket::send(const char* sendbuf, const bool nullTerminated) {
     iResult = ::send(ConnectSocket, sendbuf, (int)strlen(sendbuf) + nullTerminated, 0);
     if (iResult == SOCKET_ERROR) {
         // send failed with error, use WSAGetLastError() for more details
-        closesocket(ConnectSocket);
-        WSACleanup();
+        shutdown();
         return false;
     }
 
@@ -110,13 +109,13 @@ bool ClientSocket::shutdown() {
 
     // shutdown the connection since no more data will be sent
     iResult = ::shutdown(ConnectSocket, SD_SEND);
+    status = Status::Shutdown;
     if (iResult == SOCKET_ERROR) {
         // shutdown failed with error, use WSAGetLastError() for more details
         closesocket(ConnectSocket);
         WSACleanup();
         return false;
     }
-    status = Status::Shutdown;
 
     // Receive until the peer closes the connection
     do {

@@ -17,6 +17,13 @@
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27015"
 
+enum class Status { New, Started, Waiting, Ready, Listening, Closed, Shutdown };
+
+struct RecvBuffer {
+    char* recvbuf = nullptr;
+    int   recvbuflen = -1;
+};
+
 class ServerSocket
 {
 private:
@@ -33,6 +40,8 @@ private:
     char recvbuf[DEFAULT_BUFLEN];
     int recvbuflen = DEFAULT_BUFLEN;
 
+    Status status;
+
 public:
     ServerSocket();
     ~ServerSocket();
@@ -42,6 +51,8 @@ public:
     bool createListeningSocket();
     bool setupListeningSocket();
     bool acceptClient();
+    bool send(const char* sendbuf, const bool nullTerminated = false);
+    RecvBuffer receive();
     bool closeListeningSocket();
     bool shutdown();
 };

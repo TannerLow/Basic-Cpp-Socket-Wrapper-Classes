@@ -1,2 +1,4 @@
-﻿  main.cpp
+﻿  ClientSocket.cpp
+  main.cpp
+  Generating Code...
   Sockets.vcxproj -> C:\Users\Tanner\Documents\Github\Basic-Socket-Application\Sockets\Debug\Sockets.exe
