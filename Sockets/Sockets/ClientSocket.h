@@ -47,7 +47,7 @@ public:
     bool resolveServer(const char* ipAddr, const char* port = DEFAULT_PORT);
     bool connect();
     bool send(const char* sendbuf, const bool nullTerminated = false);
-    RecvBuffer recieve();
+    RecvBuffer receive();
     bool shutdown();
 
     Status getStatus() const;

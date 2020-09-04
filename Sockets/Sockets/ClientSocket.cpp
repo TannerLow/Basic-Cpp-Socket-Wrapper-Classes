@@ -89,7 +89,7 @@ bool ClientSocket::send(const char* sendbuf, const bool nullTerminated) {
     return true;
 }
 
-RecvBuffer ClientSocket::recieve() {
+RecvBuffer ClientSocket::receive() {
     RecvBuffer rb;
     if (status != Status::Connected) return rb; // Called out of order
 

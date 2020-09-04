@@ -17,7 +17,7 @@ int main()
     std::getline(std::cin, input);
     client.send(input.c_str(), true);
     //recieve data from server
-    char* received = strcat(client.recieve().recvbuf, "\0");
+    char* received = strcat(client.receive().recvbuf, "\0");
     std::cout << received << std::endl;
     
     client.shutdown();
