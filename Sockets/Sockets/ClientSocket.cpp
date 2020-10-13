@@ -50,6 +50,7 @@ bool ClientSocket::connect() {
         ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
         if (ConnectSocket == INVALID_SOCKET) {
             // socket failed with error, use WSAGetLastError() for more details
+            lastError = WSAGetLastError();
             WSACleanup();
             return false;
         }
@@ -82,6 +83,7 @@ bool ClientSocket::send(const char* sendbuf, const bool nullTerminated) {
     iResult = ::send(ConnectSocket, sendbuf, (int)strlen(sendbuf) + nullTerminated, 0);
     if (iResult == SOCKET_ERROR) {
         // send failed with error, use WSAGetLastError() for more details
+        lastError = WSAGetLastError();
         shutdown();
         return false;
     }
@@ -98,10 +100,28 @@ RecvBuffer ClientSocket::receive() {
         rb = { recvbuf, recvbuflen };
     else if (iResult == 0)
         shutdown(); // Connection closed
-
-    // if iResult < 0 then recv failed with error, use WSAGetLastError() for more details
+    else
+        // if iResult < 0 then recv failed with error, use WSAGetLastError() for more details
+        lastError = WSAGetLastError();
 
     return rb;
+}
+
+//recieve data but store in a string rather than a RecvBuffer
+//should be used if not sending null-terminated char*
+std::string ClientSocket::receiveAsString() {
+    if (status != Status::Connected) return ""; // Called out of order
+
+    iResult = recv(ConnectSocket, recvbuf, recvbuflen, 0);
+    if (iResult > 0)
+        return std::string(recvbuf, recvbuflen);
+    else if (iResult == 0)
+        shutdown(); // Connection closed
+    else
+        // if iResult < 0 then recv failed with error, use WSAGetLastError() for more details
+        lastError = WSAGetLastError();
+
+    return "";
 }
 
 bool ClientSocket::shutdown() {
@@ -112,6 +132,7 @@ bool ClientSocket::shutdown() {
     status = Status::Shutdown;
     if (iResult == SOCKET_ERROR) {
         // shutdown failed with error, use WSAGetLastError() for more details
+        lastError = WSAGetLastError();
         closesocket(ConnectSocket);
         WSACleanup();
         return false;
@@ -122,6 +143,8 @@ bool ClientSocket::shutdown() {
 
         iResult = recv(ConnectSocket, recvbuf, recvbuflen, 0);
         // if < 0 then recv failed with error, use WSAGetLastError() for more details
+        if (iResult < 0) 
+            lastError = WSAGetLastError();
 
     } while (iResult > 0);
 
@@ -129,6 +152,14 @@ bool ClientSocket::shutdown() {
     closesocket(ConnectSocket);
     WSACleanup();
     return true;
+}
+
+int ClientSocket::getIResult() const {
+    return iResult;
+}
+
+int ClientSocket::getLastError() const {
+    return lastError;
 }
 
 Status ClientSocket::getStatus() const {

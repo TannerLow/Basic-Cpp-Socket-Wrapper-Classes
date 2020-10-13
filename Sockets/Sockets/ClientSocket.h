@@ -7,6 +7,7 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
 
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
@@ -18,12 +19,15 @@
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27015"
 
+#ifndef STATUS_AND_RECVBUFFER
+#define STATUS_AND_RECVBUFFER
 enum class Status { New, Started, Waiting, Connected, Shutdown };
 
 struct RecvBuffer {
-    char* recvbuf    = nullptr;
+    char* recvbuf = nullptr;
     int   recvbuflen = -1;
 };
+#endif
 
 class ClientSocket
 {
@@ -34,7 +38,7 @@ private:
         * ptr = NULL,
         hints;
     char recvbuf[DEFAULT_BUFLEN];
-    int iResult;
+    int iResult = 0, lastError = 0; //error if it's not 0
     int recvbuflen = DEFAULT_BUFLEN;
 
     Status status;
@@ -48,8 +52,11 @@ public:
     bool connect();
     bool send(const char* sendbuf, const bool nullTerminated = false);
     RecvBuffer receive();
+    std::string receiveAsString();
     bool shutdown();
 
+    int getIResult() const;
+    int getLastError() const;
     Status getStatus() const;
 };
 
